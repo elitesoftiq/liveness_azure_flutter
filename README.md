@@ -15,8 +15,8 @@ Follow this steps to generate your `accessToken`: [GET_FACE_ARTIFACTS_ACCESS](ht
 Then in your `gradle.properties` add this lines (For more info: [Android Azure AI](https://github.com/Azure-Samples/azure-ai-vision-sdk/blob/main/samples/kotlin/face/FaceAnalyzerSample/README.md)):
 
 ```
-maveUser=any_user
-mavenPassword=accessToken
+mavenUser=elite
+elitePluginToken=accessToken
 ```
 
 ## iOS
