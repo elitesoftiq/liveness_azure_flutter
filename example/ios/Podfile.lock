@@ -1,0 +1,41 @@
+PODS:
+  - AzureAIVisionCore (0.17.2-beta.1)
+  - AzureAIVisionFace (0.17.2-beta.1):
+    - AzureAIVisionCore (= 0.17.2-beta.1)
+  - Flutter (1.0.0)
+  - liveness_azure_flutter (1.0.0):
+    - AzureAIVisionCore (~> 0.17.1-beta.1)
+    - AzureAIVisionFace (~> 0.17.1-beta.1)
+    - Flutter
+  - permission_handler_apple (9.1.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - liveness_azure_flutter (from `.symlinks/plugins/liveness_azure_flutter/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+
+SPEC REPOS:
+  https://msface.visualstudio.com/SDK/_git/AzureAIVisionCore.podspec:
+    - AzureAIVisionCore
+  https://msface.visualstudio.com/SDK/_git/AzureAIVisionFace.podspec:
+    - AzureAIVisionFace
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  liveness_azure_flutter:
+    :path: ".symlinks/plugins/liveness_azure_flutter/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+
+SPEC CHECKSUMS:
+  AzureAIVisionCore: e3a507dc8ecaa08521586074e595e051cf6a493d
+  AzureAIVisionFace: b12e10568f059ece1679db59b3e07b649f53592b
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  liveness_azure_flutter: ad96b4195fa5aefe80ee9030b867c4a8f9c8d0b3
+  permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
+
+PODFILE CHECKSUM: add01539bfaea1ebc0fd8df7af3ee9f8f562cd4a
+
+COCOAPODS: 1.16.2

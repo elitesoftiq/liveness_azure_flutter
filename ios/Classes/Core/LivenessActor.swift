@@ -29,11 +29,11 @@ class LivenessActor{
         self.detailsHandler = detailsHandler
         self.stopCameraHandler = stopCameraHandler
     }
-    
+
     func stopAnalyzer() {
         try! self.faceAnalyzer.stopAnalyzeOnce()
     }
-    
+
     static func createFaceAnalyzer(source: VisionSource,
                                    sessionAuthorizationToken: String) async throws -> FaceAnalyzer? {
         guard let createOptions = try? FaceAnalyzerCreateOptions() else {
@@ -53,12 +53,12 @@ class LivenessActor{
                 self.resultHandler(nil)
                 return
             }
-            
+
             self.userFeedbackHandler("")
 
             let face = result.faces[result.faces.startIndex]
             let faceAnalyzedDetails = result.faceAnalyzedDetails;
-            
+
             let livenessStatus = face.livenessResult?.status.rawValue
             let failureReason = face.livenessResult?.failureReason.rawValue
             let verificationStatus = face.recognitionResult?.recognitionStatus.rawValue
@@ -66,7 +66,7 @@ class LivenessActor{
             let resultId = face.livenessResult?.resultId.uuidString
             let digest = faceAnalyzedDetails?.digest
             let faceUid = face.uuid.uuidString.lowercased()
-            
+
             self.resultHandler(LivenessResultModel(livenessStatus: String(describing: verificationStatus),
                                                    failureReason: String(describing: livenessStatus),
                                                    verificationStatus: String(describing: failureReason),
@@ -74,7 +74,7 @@ class LivenessActor{
                                                    resultId: resultId,
                                                    digest: digest,
                                                    faceUID: faceUid))
-            
+
             self.detailsHandler(faceAnalyzedDetails)
         }
 
@@ -83,7 +83,7 @@ class LivenessActor{
                 self.resultHandler(nil)
                 return
             }
-            
+
             let face = result.faces[result.faces.startIndex]
 
             if let action = face.actionRequired?.action {
@@ -91,16 +91,16 @@ class LivenessActor{
                 case .brightenDisplay:
                     self.screenBackgroundColorHandler(Color.white)
                     break
-                    
-                case .darkenDisplay: 
+
+                case .darkenDisplay:
                     self.screenBackgroundColorHandler(Color.black)
                     break
-                    
-                case .stopCamera: 
+
+                case .stopCamera:
                     self.stopCameraHandler()
                     break
-                    
-                default: 
+
+                default:
                     break
                 }
 
@@ -124,11 +124,11 @@ class LivenessActor{
         do {
             methodOptions = try FaceAnalysisOptions()
             methodOptions.faceSelectionMode = FaceSelectionMode.largest
-            
+
         } catch {
             self.resultHandler(nil)
             return
-            
+
         }
 
         self.faceAnalyzer.analyzeOnce(using: methodOptions, completionHandler: { (result, error) in

@@ -1,5 +1,6 @@
 package com.cleancode.liveness_azure_flutter
 
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.graphics.Color
 import android.hardware.camera2.*
@@ -9,6 +10,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.SurfaceView
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.addCallback
@@ -28,7 +30,11 @@ import com.google.gson.Gson
 import org.threeten.bp.OffsetDateTime
 import java.nio.ByteBuffer
 
+/**
+ * مثال على نشاط (Activity) لإجراء الـ Liveness
+ */
 open class LivenessActivity : AppCompatActivity() {
+
     class StringTokenCredential(token: String) : TokenCredential {
         override fun getToken(
             request: TokenRequestContext,
@@ -38,7 +44,6 @@ open class LivenessActivity : AppCompatActivity() {
         }
 
         private var _token: AccessToken? = null
-
         init {
             _token = AccessToken(token, OffsetDateTime.MAX)
         }
@@ -48,8 +53,10 @@ open class LivenessActivity : AppCompatActivity() {
     private lateinit var mCameraPreviewLayout: FrameLayout
     private lateinit var mBackgroundLayout: ConstraintLayout
     private lateinit var mInstructionsView: TextView
+
     private var lastTextUpdateTime = 0L
     private val delayMillis = 200L
+
     private var mVisionSource: VisionSource? = null
     private var mFaceAnalyzer: FaceAnalyzer? = null
     private var mFaceAnalysisOptions: FaceAnalysisOptions? = null
@@ -58,41 +65,47 @@ open class LivenessActivity : AppCompatActivity() {
     private var mBackPressed: Boolean = false
     private var mHandler = Handler(Looper.getMainLooper())
     private var mDoneAnalyzing: Boolean = false
+
     private var cameraFrame: ByteBuffer? = null
 
+    private var progressAnimator: ValueAnimator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_liveness)
+
         mSurfaceView = AutoFitSurfaceView(this)
         mCameraPreviewLayout = findViewById(R.id.camera_preview)
         mCameraPreviewLayout.removeAllViews()
         mCameraPreviewLayout.addView(mSurfaceView)
         mCameraPreviewLayout.visibility = View.INVISIBLE
+
         mInstructionsView = findViewById(R.id.instructionString)
         mBackgroundLayout = findViewById(R.id.activity_main_layout)
+
         mSessionToken = intent.getStringExtra("authTokenSession")
-
         if (mSessionToken.isNullOrBlank()) {
-            return onSubmit(null)
-
+            onSubmit(null)
+            return
         }
 
-        onBackPressedDispatcher.addCallback(this){
+        onBackPressedDispatcher.addCallback(this) {
             onBack()
         }
     }
 
     override fun onResume() {
         super.onResume()
+
         if (mFaceAnalyzer == null) {
             initializeConfig()
+
             val visionSourceOptions = VisionSourceOptions(this, this as LifecycleOwner)
             visionSourceOptions.setPreview(mSurfaceView)
             mVisionSource = VisionSource.fromDefaultCamera(visionSourceOptions)
+
             displayCameraOnLayout()
             createFaceAnalyzer()
-
         }
 
         startAnalyzeOnce()
@@ -100,12 +113,18 @@ open class LivenessActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        progressAnimator?.cancel()
+
         mVisionSource?.close()
         mVisionSource = null
+
         mServiceOptions?.close()
         mServiceOptions = null
+
         mFaceAnalysisOptions?.close()
         mFaceAnalysisOptions = null
+
         try {
             mFaceAnalyzer?.close()
             mFaceAnalyzer = null
@@ -118,6 +137,27 @@ open class LivenessActivity : AppCompatActivity() {
         mServiceOptions = VisionServiceOptions(StringTokenCredential(mSessionToken.toString()))
     }
 
+
+    private fun startProgressAnimation() {
+        progressAnimator?.cancel()
+        progressAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 1500
+            interpolator = LinearInterpolator()
+            repeatCount = ValueAnimator.INFINITE
+            addUpdateListener {
+                (mSurfaceView as? AutoFitSurfaceView)?.setProgress(it.animatedValue as Float)
+            }
+            start()
+        }
+    }
+
+
+    private fun resetProgressAnimation() {
+        progressAnimator?.cancel()
+        (mSurfaceView as? AutoFitSurfaceView)?.setProgress(0f)
+    }
+
+
     private fun createFaceAnalyzer() {
         FaceAnalyzerCreateOptions().use { createOptions ->
             createOptions.setFaceAnalyzerMode(FaceAnalyzerMode.TRACK_FACES_ACROSS_IMAGE_STREAM)
@@ -126,26 +166,31 @@ open class LivenessActivity : AppCompatActivity() {
                 .serviceOptions(mServiceOptions)
                 .source(mVisionSource)
                 .createOptions(createOptions)
-                .build().get()
+                .build()
+                .get()
         }
 
         mFaceAnalyzer?.apply {
-            this.analyzed.addEventListener(analyzedListener)
-            this.analyzing.addEventListener(analyzingListener)
-            this.stopped.addEventListener(stoppedListener)
+            analyzed.addEventListener(analyzedListener)
+            analyzing.addEventListener(analyzingListener)
+            stopped.addEventListener(stoppedListener)
         }
     }
 
-    @Suppress("MemberVisibilityCanBePrivate")
+
+
     protected var analyzingListener =
         EventListener<FaceAnalyzingEventArgs> { _, e ->
-
             e.result.use { result ->
                 if (result.faces.isNotEmpty()) {
-                    // Get the first face in result
                     val face = result.faces.iterator().next()
 
-                    // Lighten/darken the screen based on liveness feedback
+                    if (face.feedbackForFace == FeedbackForFace.NONE) {
+                        runOnUiThread { startProgressAnimation() }
+                    } else {
+                        runOnUiThread { resetProgressAnimation() }
+                    }
+
                     val requiredAction = face.actionRequiredFromApplicationTask?.action
                     when (requiredAction) {
                         ActionRequiredFromApplication.BRIGHTEN_DISPLAY -> {
@@ -159,12 +204,10 @@ open class LivenessActivity : AppCompatActivity() {
                         ActionRequiredFromApplication.STOP_CAMERA -> {
                             face.actionRequiredFromApplicationTask.setAsCompleted()
                             mCameraPreviewLayout.visibility = View.INVISIBLE
-
                         }
                         else -> {}
                     }
 
-                    // Display user feedback and warnings on UI
                     if (!mDoneAnalyzing) {
                         var feedbackMessage = mapFeedbackToMessage(FeedbackForFace.NONE)
                         if (face.feedbackForFace != null) {
@@ -172,12 +215,8 @@ open class LivenessActivity : AppCompatActivity() {
                         }
 
                         val currentTime = System.currentTimeMillis()
-                        // Check if enough time has passed since the last update
                         if (currentTime - lastTextUpdateTime >= delayMillis) {
-                            // Update the text view
                             updateTextView(feedbackMessage)
-
-                            // Update the last update time
                             lastTextUpdateTime = currentTime
                         }
                     }
@@ -185,33 +224,47 @@ open class LivenessActivity : AppCompatActivity() {
             }
         }
 
-    @Suppress("MemberVisibilityCanBePrivate")
+
     protected var analyzedListener =
         EventListener<FaceAnalyzedEventArgs> { _, e ->
             e.result.use { result ->
                 if (result.faces.isNotEmpty()) {
                     val face = result.faces.iterator().next()
 
-                    val livenessStatus: LivenessStatus = face.livenessResult?.livenessStatus?: LivenessStatus.FAILED
-                    val livenessFailureReason = face.livenessResult?.livenessFailureReason?: LivenessFailureReason.NONE
-                    val verifyStatus = face.recognitionResult?.recognitionStatus?:RecognitionStatus.NOT_COMPUTED
-                    val verifyConfidence = face.recognitionResult?.confidence?:0.0.toFloat()
-                    val digest = result.details?.digest?:""
+                    val livenessStatus: LivenessStatus = face.livenessResult?.livenessStatus ?: LivenessStatus.FAILED
+                    val livenessFailureReason = face.livenessResult?.livenessFailureReason ?: LivenessFailureReason.NONE
+                    val verifyStatus = face.recognitionResult?.recognitionStatus ?: RecognitionStatus.NOT_COMPUTED
+                    val verifyConfidence = face.recognitionResult?.confidence ?: 0.0f
+                    val digest = result.details?.digest ?: ""
                     val resultIds = face.livenessResult.resultId.toString()
                     val faceUid = face.faceUuid.toString()
 
-                    val analyzedResult = LivenessResultModel(livenessStatus, livenessFailureReason, verifyStatus, verifyConfidence, resultIds, digest, faceUid)
+                    val analyzedResult = LivenessResultModel(
+                        livenessStatus,
+                        livenessFailureReason,
+                        verifyStatus,
+                        verifyConfidence,
+                        resultIds,
+                        digest,
+                        faceUid
+                    )
                     onSubmit(analyzedResult)
-
                 } else {
-                    val analyzedResult = LivenessResultModel(LivenessStatus.NOT_COMPUTED, LivenessFailureReason.NONE, RecognitionStatus.NOT_COMPUTED, 0.0.toFloat(), "", "", "")
+                    val analyzedResult = LivenessResultModel(
+                        LivenessStatus.NOT_COMPUTED,
+                        LivenessFailureReason.NONE,
+                        RecognitionStatus.NOT_COMPUTED,
+                        0.0f,
+                        "",
+                        "",
+                        ""
+                    )
                     onSubmit(analyzedResult)
-
                 }
             }
         }
 
-    @Suppress("MemberVisibilityCanBePrivate")
+
     protected var stoppedListener =
         EventListener<FaceAnalysisStoppedEventArgs> { _, e ->
             if (e.reason == FaceAnalysisStoppedReason.ERROR) {
@@ -219,12 +272,13 @@ open class LivenessActivity : AppCompatActivity() {
             }
         }
 
+
     private fun startAnalyzeOnce() {
         mCameraPreviewLayout.visibility = View.VISIBLE
 
-        if (mServiceOptions == null ) {
-            return onSubmit(null)
-
+        if (mServiceOptions == null) {
+            onSubmit(null)
+            return
         }
 
         mFaceAnalysisOptions = FaceAnalysisOptions()
@@ -232,15 +286,13 @@ open class LivenessActivity : AppCompatActivity() {
 
         try {
             mFaceAnalyzer?.analyzeOnceAsync(mFaceAnalysisOptions)
-            if(VisionSourceHelper.getVisionSourceAccessor() != null){
+            if (VisionSourceHelper.getVisionSourceAccessor() != null) {
                 Log.i("visionSource", "is not null")
                 VisionSourceHelper.getVisionSourceAccessor().addSubscriber {
                     cameraFrame = it.data
                 }
-
-            }else{
+            } else {
                 Log.i("visionSource", "is null")
-
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -248,40 +300,46 @@ open class LivenessActivity : AppCompatActivity() {
         mDoneAnalyzing = false
     }
 
+
     private fun updateTextView(newText: String) {
         mHandler.post {
             mInstructionsView.text = newText
         }
     }
 
+
     private fun displayCameraOnLayout() {
         val previewSize = mVisionSource?.cameraPreviewFormat
         val params = mCameraPreviewLayout.layoutParams as ConstraintLayout.LayoutParams
-        params.dimensionRatio = previewSize?.height.toString() + ":" + previewSize?.width
+
+        if (previewSize != null) {
+            params.dimensionRatio = "${previewSize.height}:${previewSize.width}"
+        }
         params.width = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT
         params.matchConstraintDefaultWidth = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT_PERCENT
         params.matchConstraintPercentWidth = 0.8f
         mCameraPreviewLayout.layoutParams = params
     }
 
-    private fun onSubmit(analyzedResult: LivenessResultModel?){
+
+
+    private fun onSubmit(analyzedResult: LivenessResultModel?) {
         val gson = Gson()
         val resultIntent = Intent()
         resultIntent.putExtra("result_azure", gson.toJson(analyzedResult))
-        setResult(android.app.Activity.RESULT_OK, resultIntent)
+        setResult(RESULT_OK, resultIntent)
         finish()
     }
 
-    private fun onBack(){
+    private fun onBack() {
         synchronized(this) {
             mBackPressed = true
         }
-
-        setResult(android.app.Activity.RESULT_CANCELED, null)
+        setResult(RESULT_CANCELED, null)
         finish()
     }
 
-    private fun mapFeedbackToMessage(feedback : FeedbackForFace): String {
+    private fun mapFeedbackToMessage(feedback: FeedbackForFace): String {
         return FaceFeedbackUtils.faceFeedbackToString(feedback)
     }
 }

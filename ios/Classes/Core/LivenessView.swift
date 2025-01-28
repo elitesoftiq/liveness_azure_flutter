@@ -87,4 +87,3 @@ struct LivenessView: View {
         self.completionHandler(result)
     }
 }
-
