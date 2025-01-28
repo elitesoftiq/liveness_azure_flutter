@@ -46,6 +46,7 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         }
     }
 
+
     override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
         canvas.clipPath(path)
