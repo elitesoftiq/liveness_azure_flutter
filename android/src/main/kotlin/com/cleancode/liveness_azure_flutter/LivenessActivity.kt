@@ -31,7 +31,7 @@ import org.threeten.bp.OffsetDateTime
 import java.nio.ByteBuffer
 
 /**
- * مثال على نشاط (Activity) لإجراء الـ Liveness
+ * مثال على نشاط (Activity) لإجراء عملية Liveness
  */
 open class LivenessActivity : AppCompatActivity() {
 
@@ -44,6 +44,7 @@ open class LivenessActivity : AppCompatActivity() {
         }
 
         private var _token: AccessToken? = null
+
         init {
             _token = AccessToken(token, OffsetDateTime.MAX)
         }
@@ -74,6 +75,7 @@ open class LivenessActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_liveness)
 
+        // استبدال الـ SurfaceView المدمج بـ AutoFitSurfaceView مع التعديلات
         mSurfaceView = AutoFitSurfaceView(this)
         mCameraPreviewLayout = findViewById(R.id.camera_preview)
         mCameraPreviewLayout.removeAllViews()
@@ -137,7 +139,6 @@ open class LivenessActivity : AppCompatActivity() {
         mServiceOptions = VisionServiceOptions(StringTokenCredential(mSessionToken.toString()))
     }
 
-
     private fun startProgressAnimation() {
         progressAnimator?.cancel()
         progressAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
@@ -151,12 +152,10 @@ open class LivenessActivity : AppCompatActivity() {
         }
     }
 
-
     private fun resetProgressAnimation() {
         progressAnimator?.cancel()
         (mSurfaceView as? AutoFitSurfaceView)?.setProgress(0f)
     }
-
 
     private fun createFaceAnalyzer() {
         FaceAnalyzerCreateOptions().use { createOptions ->
@@ -176,8 +175,6 @@ open class LivenessActivity : AppCompatActivity() {
             stopped.addEventListener(stoppedListener)
         }
     }
-
-
 
     protected var analyzingListener =
         EventListener<FaceAnalyzingEventArgs> { _, e ->
@@ -224,7 +221,6 @@ open class LivenessActivity : AppCompatActivity() {
             }
         }
 
-
     protected var analyzedListener =
         EventListener<FaceAnalyzedEventArgs> { _, e ->
             e.result.use { result ->
@@ -264,14 +260,12 @@ open class LivenessActivity : AppCompatActivity() {
             }
         }
 
-
     protected var stoppedListener =
         EventListener<FaceAnalysisStoppedEventArgs> { _, e ->
             if (e.reason == FaceAnalysisStoppedReason.ERROR) {
                 onSubmit(null)
             }
         }
-
 
     private fun startAnalyzeOnce() {
         mCameraPreviewLayout.visibility = View.VISIBLE
@@ -300,13 +294,11 @@ open class LivenessActivity : AppCompatActivity() {
         mDoneAnalyzing = false
     }
 
-
     private fun updateTextView(newText: String) {
         mHandler.post {
             mInstructionsView.text = newText
         }
     }
-
 
     private fun displayCameraOnLayout() {
         val previewSize = mVisionSource?.cameraPreviewFormat
@@ -317,11 +309,9 @@ open class LivenessActivity : AppCompatActivity() {
         }
         params.width = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT
         params.matchConstraintDefaultWidth = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT_PERCENT
-        params.matchConstraintPercentWidth = 0.8f
+        params.matchConstraintPercentWidth = 0.9f
         mCameraPreviewLayout.layoutParams = params
     }
-
-
 
     private fun onSubmit(analyzedResult: LivenessResultModel?) {
         val gson = Gson()

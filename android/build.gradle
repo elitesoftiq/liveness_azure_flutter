@@ -2,7 +2,7 @@ group 'com.cleancode.liveness_azure_flutter'
 version '1.0-SNAPSHOT'
 
 def mavenUser = project.properties['mavenUser']
-def elitePluginToken = project.properties['elitePluginToken']
+def elitePluginToken = project.properties['F3mcYLSmVeQLfx71oytlqduDMeTiYMarzqNmI1SnmyXuvEH8i5y3JQQJ99BBACAAAAAAArohAAASAZDO1fXO']
 
 buildscript {
     ext.kotlin_version = '1.9.20'
@@ -30,8 +30,8 @@ rootProject.allprojects {
             url = 'https://pkgs.dev.azure.com/msface/SDK/_packaging/AzureAIVision/maven/v1'
             name = 'AzureAIVision'
             credentials {
-                username = findProperty('mavenUser') ?: ''
-                password = findProperty('elitePluginToken') ?: ''
+                username =  'vbn'
+                password = 'F3mcYLSmVeQLfx71oytlqduDMeTiYMarzqNmI1SnmyXuvEH8i5y3JQQJ99BBACAAAAAAArohAAASAZDO1fXO'
             }
         }
     }

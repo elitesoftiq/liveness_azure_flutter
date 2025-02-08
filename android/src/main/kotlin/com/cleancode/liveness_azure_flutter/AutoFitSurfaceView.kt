@@ -16,29 +16,25 @@ class AutoFitSurfaceView @JvmOverloads constructor(
 ) : SurfaceView(context, attrs, defStyle), SurfaceHolder.Callback {
 
     private var aspectRatio = 0f
-
     private var progress: Float = 0f
-
     private val path = Path()
-
     private val borderPaint = Paint().apply {
-        color = Color.WHITE
+        color = Color.GREEN
         style = Paint.Style.STROKE
-        strokeWidth = 4f
+        strokeWidth = 16f
         alpha = 255
     }
-
     private val progressPaint = Paint().apply {
         style = Paint.Style.STROKE
         strokeWidth = 8f
         strokeCap = Paint.Cap.ROUND
     }
-
-    private val gradientColors = intArrayOf(Color.WHITE, Color.GREEN)
+    private val gradientColors = intArrayOf(Color.GREEN, Color.WHITE)
     private var gradient: SweepGradient? = null
     private var ovalRect = RectF()
 
     init {
+        // تحديد الـ Outline بحيث يكون على شكل دائرة
         outlineProvider = object : ViewOutlineProvider() {
             override fun getOutline(view: View?, outline: Outline?) {
                 if (view != null && outline != null) {
@@ -69,17 +65,18 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         }
     }
 
-
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
         val centerX = w / 2f
         val centerY = h / 2f
-        val radius = min(centerX, centerY) * 1f
+        val radius = min(centerX, centerY)
 
+        // إعادة تعيين وإنشاء المسار الدائري
         path.reset()
         path.addCircle(centerX, centerY, radius, Path.Direction.CW)
 
+        // إعداد الـ SweepGradient لطلاء الـ arc
         gradient = SweepGradient(centerX, centerY, gradientColors, null).apply {
             val matrix = Matrix()
             matrix.preRotate(-90f, centerX, centerY)
@@ -87,6 +84,7 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         }
         progressPaint.shader = gradient
 
+        // تحديد مستطيل الدائرة للرسم
         ovalRect.set(
             centerX - radius,
             centerY - radius,
@@ -95,16 +93,31 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         )
     }
 
-
     override fun dispatchDraw(canvas: Canvas) {
+        // رسم المحتوى الأساسي (في حال وجود خلفيات أو عناصر أخرى)
         super.dispatchDraw(canvas)
 
+        // رسم حدود الدائرة والـ arc
         canvas.drawOval(ovalRect, borderPaint)
-
         val sweepAngle = 360f * progress
         canvas.drawArc(ovalRect, -90f, sweepAngle, false, progressPaint)
 
-        canvas.clipPath(path)
+        // حفظ حالة الكانفس لتطبيق القص (clip) بشكل مؤقت
+        canvas.save()
+
+        // استبعاد المنطقة الدائرية من طبقة التعتيم:
+        // للإصدارات من Oreo فما فوق نستخدم clipOutPath، وللإصدارات القديمة نستخدم clipPath مع Region.Op.DIFFERENCE
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            canvas.clipOutPath(path)
+        } else {
+            canvas.clipPath(path, Region.Op.DIFFERENCE)
+        }
+
+        // رسم طبقة التعتيم التي تغطي كامل الشاشة (مثلاً: أسود مع شفافية 50%)
+        canvas.drawColor(Color.parseColor("#80000000"))
+
+        // استعادة حالة الكانفس
+        canvas.restore()
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {

@@ -36,6 +36,6 @@ SPEC CHECKSUMS:
   liveness_azure_flutter: ad96b4195fa5aefe80ee9030b867c4a8f9c8d0b3
   permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
 
-PODFILE CHECKSUM: add01539bfaea1ebc0fd8df7af3ee9f8f562cd4a
+PODFILE CHECKSUM: 18a58c6467c6a6a5ee761f3da6f0271dec24cf73
 
 COCOAPODS: 1.16.2
