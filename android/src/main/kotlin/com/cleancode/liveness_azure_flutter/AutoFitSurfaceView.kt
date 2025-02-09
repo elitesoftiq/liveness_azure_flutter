@@ -72,11 +72,9 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         val centerY = h / 2f
         val radius = min(centerX, centerY)
 
-        // إعادة تعيين وإنشاء المسار الدائري
         path.reset()
         path.addCircle(centerX, centerY, radius, Path.Direction.CW)
 
-        // إعداد الـ SweepGradient لطلاء الـ arc
         gradient = SweepGradient(centerX, centerY, gradientColors, null).apply {
             val matrix = Matrix()
             matrix.preRotate(-90f, centerX, centerY)
@@ -84,7 +82,6 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         }
         progressPaint.shader = gradient
 
-        // تحديد مستطيل الدائرة للرسم
         ovalRect.set(
             centerX - radius,
             centerY - radius,
@@ -94,29 +91,22 @@ class AutoFitSurfaceView @JvmOverloads constructor(
     }
 
     override fun dispatchDraw(canvas: Canvas) {
-        // رسم المحتوى الأساسي (في حال وجود خلفيات أو عناصر أخرى)
         super.dispatchDraw(canvas)
 
-        // رسم حدود الدائرة والـ arc
         canvas.drawOval(ovalRect, borderPaint)
         val sweepAngle = 360f * progress
         canvas.drawArc(ovalRect, -90f, sweepAngle, false, progressPaint)
 
-        // حفظ حالة الكانفس لتطبيق القص (clip) بشكل مؤقت
         canvas.save()
 
-        // استبعاد المنطقة الدائرية من طبقة التعتيم:
-        // للإصدارات من Oreo فما فوق نستخدم clipOutPath، وللإصدارات القديمة نستخدم clipPath مع Region.Op.DIFFERENCE
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             canvas.clipOutPath(path)
         } else {
             canvas.clipPath(path, Region.Op.DIFFERENCE)
         }
 
-        // رسم طبقة التعتيم التي تغطي كامل الشاشة (مثلاً: أسود مع شفافية 50%)
         canvas.drawColor(Color.parseColor("#80000000"))
 
-        // استعادة حالة الكانفس
         canvas.restore()
     }
 
