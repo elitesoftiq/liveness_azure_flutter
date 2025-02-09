@@ -191,11 +191,11 @@ open class LivenessActivity : AppCompatActivity() {
                     val requiredAction = face.actionRequiredFromApplicationTask?.action
                     when (requiredAction) {
                         ActionRequiredFromApplication.BRIGHTEN_DISPLAY -> {
-                            mBackgroundLayout.setBackgroundColor(Color.WHITE)
+//                            mBackgroundLayout.setBackgroundColor(Color.parseColor("#80000000"))
                             face.actionRequiredFromApplicationTask.setAsCompleted()
                         }
                         ActionRequiredFromApplication.DARKEN_DISPLAY -> {
-                            mBackgroundLayout.setBackgroundColor(Color.BLACK)
+//                            mBackgroundLayout.setBackgroundColor(Color.WHITE)
                             face.actionRequiredFromApplicationTask.setAsCompleted()
                         }
                         ActionRequiredFromApplication.STOP_CAMERA -> {
@@ -207,9 +207,9 @@ open class LivenessActivity : AppCompatActivity() {
 
                     if (!mDoneAnalyzing) {
                         var feedbackMessage = mapFeedbackToMessage(FeedbackForFace.NONE)
-                        if (face.feedbackForFace != null) {
+
                             feedbackMessage = mapFeedbackToMessage(face.feedbackForFace)
-                        }
+
 
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - lastTextUpdateTime >= delayMillis) {

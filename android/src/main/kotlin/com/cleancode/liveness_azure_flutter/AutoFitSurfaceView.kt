@@ -34,7 +34,6 @@ class AutoFitSurfaceView @JvmOverloads constructor(
     private var ovalRect = RectF()
 
     init {
-        // تحديد الـ Outline بحيث يكون على شكل دائرة
         outlineProvider = object : ViewOutlineProvider() {
             override fun getOutline(view: View?, outline: Outline?) {
                 if (view != null && outline != null) {
