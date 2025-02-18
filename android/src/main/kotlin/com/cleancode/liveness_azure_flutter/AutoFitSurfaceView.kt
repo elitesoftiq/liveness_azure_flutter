@@ -96,17 +96,17 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         val sweepAngle = 360f * progress
         canvas.drawArc(ovalRect, -90f, sweepAngle, false, progressPaint)
 
+        // قم بإزالة أو تعليق الكود التالي:
+        /*
         canvas.save()
-
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             canvas.clipOutPath(path)
         } else {
             canvas.clipPath(path, Region.Op.DIFFERENCE)
         }
-
         canvas.drawColor(Color.parseColor("#80000000"))
-
         canvas.restore()
+        */
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
