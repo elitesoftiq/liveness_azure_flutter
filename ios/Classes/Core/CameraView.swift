@@ -12,20 +12,15 @@ struct CameraView: View {
     let onViewDidLoad: (VisionSource) -> Void
 
     @State private var isAnimating = false
-
     @State private var isLoading: Bool = true
-
     @State private var timer: Timer?
 
     private func updateProgress() {
-
         guard !isAnimating else { return }
-
         withAnimation(.easeInOut(duration: 1.5)) {
             isAnimating = true
             progress = feedbackMessage == "Hold Still." ? 1.0 : 0.0
         }
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             isAnimating = false
         }
@@ -34,7 +29,6 @@ struct CameraView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-
                 Color.black
                     .ignoresSafeArea()
 
@@ -42,7 +36,6 @@ struct CameraView: View {
                     LoadingView()
                         .transition(.opacity)
                 } else {
-
                     CameraPreviewView(isCameraPreviewVisible: $isCameraPreviewVisible, onViewDidLoad: onViewDidLoad)
                         .frame(width: geometry.size.width * CameraView.circleDiameterRatio,
                                height: geometry.size.width * CameraView.circleDiameterRatio)
@@ -79,7 +72,6 @@ struct CameraView: View {
             .onChange(of: feedbackMessage) { newValue in
                 if newValue == "Hold Still." {
                     updateProgress()
-
                     timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
                         updateProgress()
                     }
@@ -93,9 +85,7 @@ struct CameraView: View {
             }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    withAnimation {
-                        isLoading = false
-                    }
+                    withAnimation { isLoading = false }
                 }
             }
             .onDisappear {
@@ -113,7 +103,6 @@ struct LoadingView: View {
 
     var body: some View {
         VStack {
-
             Image(systemName: "camera.fill")
                 .resizable()
                 .scaledToFit()
@@ -122,7 +111,8 @@ struct LoadingView: View {
                 .scaleEffect(scale)
                 .opacity(opacity)
                 .onAppear {
-                    withAnimation(Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                    withAnimation(Animation.easeInOut(duration: 1.0)
+                                    .repeatForever(autoreverses: true)) {
                         scale = 1.0
                         opacity = 1.0
                     }
@@ -132,6 +122,77 @@ struct LoadingView: View {
                 .foregroundColor(.white)
                 .font(.headline)
                 .padding(.top, 20)
+        }
+    }
+}
+
+struct CameraPreviewView: UIViewRepresentable {
+    @Binding var isCameraPreviewVisible: Bool
+    var onViewDidLoad: (VisionSource) -> Void
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: UIScreen.main.bounds)
+        context.coordinator.setupCamera(in: view)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    class Coordinator: NSObject {
+        var parent: CameraPreviewView
+        var captureSession: AVCaptureSession?
+        var previewLayer: AVCaptureVideoPreviewLayer?
+
+        init(parent: CameraPreviewView) {
+            self.parent = parent
+            super.init()
+        }
+
+        func setupCamera(in view: UIView) {
+            captureSession = AVCaptureSession()
+            guard let captureSession = captureSession else { return }
+
+            guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
+            do {
+                let input = try AVCaptureDeviceInput(device: videoCaptureDevice)
+                if captureSession.canAddInput(input) {
+                    captureSession.addInput(input)
+                }
+
+                try videoCaptureDevice.lockForConfiguration()
+                if videoCaptureDevice.isExposurePointOfInterestSupported {
+                    videoCaptureDevice.exposurePointOfInterest = CGPoint(x: 0.5, y: 0.5)
+                }
+                if videoCaptureDevice.isExposureModeSupported(.continuousAutoExposure) {
+                    videoCaptureDevice.exposureMode = .continuousAutoExposure
+                }
+                if videoCaptureDevice.isExposureTargetBiasSupported {
+                    videoCaptureDevice.setExposureTargetBias(-0.5) { _ in
+                    }
+                }
+                videoCaptureDevice.unlockForConfiguration()
+
+            } catch {
+                print("Error setting up camera input: \(error)")
+                return
+            }
+
+            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+            previewLayer?.videoGravity = .resizeAspectFill
+            previewLayer?.frame = view.bounds
+            if let previewLayer = previewLayer {
+                view.layer.addSublayer(previewLayer)
+            }
+
+            captureSession.startRunning()
+
+            let dummySource = VisionSource()
+            parent.onViewDidLoad(dummySource)
         }
     }
 }
