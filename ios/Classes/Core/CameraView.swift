@@ -36,7 +36,7 @@ struct CameraView: View {
                     LoadingView()
                         .transition(.opacity)
                 } else {
-                    CameraPreviewView(isCameraPreviewVisible: $isCameraPreviewVisible, onViewDidLoad: onViewDidLoad)
+                    CustomCameraPreviewView(isCameraPreviewVisible: $isCameraPreviewVisible, onViewDidLoad: onViewDidLoad)
                         .frame(width: geometry.size.width * CameraView.circleDiameterRatio,
                                height: geometry.size.width * CameraView.circleDiameterRatio)
                         .clipShape(Circle())
@@ -126,7 +126,7 @@ struct LoadingView: View {
     }
 }
 
-struct CameraPreviewView: UIViewRepresentable {
+struct CustomCameraPreviewView: UIViewRepresentable {
     @Binding var isCameraPreviewVisible: Bool
     var onViewDidLoad: (VisionSource) -> Void
 
@@ -144,11 +144,11 @@ struct CameraPreviewView: UIViewRepresentable {
     }
 
     class Coordinator: NSObject {
-        var parent: CameraPreviewView
+        var parent: CustomCameraPreviewView
         var captureSession: AVCaptureSession?
         var previewLayer: AVCaptureVideoPreviewLayer?
 
-        init(parent: CameraPreviewView) {
+        init(parent: CustomCameraPreviewView) {
             self.parent = parent
             super.init()
         }
@@ -172,8 +172,7 @@ struct CameraPreviewView: UIViewRepresentable {
                     videoCaptureDevice.exposureMode = .continuousAutoExposure
                 }
                 if videoCaptureDevice.isExposureTargetBiasSupported {
-                    videoCaptureDevice.setExposureTargetBias(-0.5) { _ in
-                    }
+                    videoCaptureDevice.setExposureTargetBias(-0.5) { _ in }
                 }
                 videoCaptureDevice.unlockForConfiguration()
 
