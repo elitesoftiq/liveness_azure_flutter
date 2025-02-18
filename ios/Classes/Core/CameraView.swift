@@ -171,7 +171,8 @@ struct CustomCameraPreviewView: UIViewRepresentable {
                 if videoCaptureDevice.isExposureModeSupported(.continuousAutoExposure) {
                     videoCaptureDevice.exposureMode = .continuousAutoExposure
                 }
-                if videoCaptureDevice.isExposureTargetBiasSupported {
+                if videoCaptureDevice.minExposureTargetBias <= -0.5 &&
+                    videoCaptureDevice.maxExposureTargetBias >= -0.5 {
                     videoCaptureDevice.setExposureTargetBias(-0.5) { _ in }
                 }
                 videoCaptureDevice.unlockForConfiguration()
