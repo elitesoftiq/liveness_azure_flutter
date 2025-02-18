@@ -34,15 +34,13 @@ struct CameraView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-
                 Color.clear
-                               .ignoresSafeArea()
+                    .ignoresSafeArea()
 
                 if isLoading {
                     LoadingView()
                         .transition(.opacity)
                 } else {
-
                     CameraPreviewView(isCameraPreviewVisible: $isCameraPreviewVisible, onViewDidLoad: onViewDidLoad)
                         .frame(width: geometry.size.width * CameraView.circleDiameterRatio,
                                height: geometry.size.width * CameraView.circleDiameterRatio)
@@ -67,11 +65,11 @@ struct CameraView: View {
                         .animation(.easeInOut(duration: 1.5), value: progress)
 
                     VStack {
-                       Text(feedbackMessage)
-                           .foregroundColor(Color(red: 64/255, green: 224/255, blue: 208/255))
-                           .font(.system(size: 20, weight: .medium))
-                           .padding(.top, 80)
-                           .multilineTextAlignment(.center)
+                        Text(feedbackMessage)
+                            .foregroundColor(Color(red: 64/255, green: 224/255, blue: 208/255))
+                            .font(.system(size: 20, weight: .medium))
+                            .padding(.top, 80)
+                            .multilineTextAlignment(.center)
 
                         Spacer()
                     }
@@ -80,7 +78,6 @@ struct CameraView: View {
             .onChange(of: feedbackMessage) { newValue in
                 if newValue == "Hold Still." {
                     updateProgress()
-
                     timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
                         updateProgress()
                     }
@@ -104,8 +101,10 @@ struct CameraView: View {
                 timer = nil
             }
         }
+        .background(backgroundColor ?? Color.clear)
         .edgesIgnoringSafeArea(.all)
     }
+
 }
 
 struct LoadingView: View {
