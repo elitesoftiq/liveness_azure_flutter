@@ -12,15 +12,20 @@ struct CameraView: View {
     let onViewDidLoad: (VisionSource) -> Void
 
     @State private var isAnimating = false
+
     @State private var isLoading: Bool = true
+
     @State private var timer: Timer?
 
     private func updateProgress() {
+
         guard !isAnimating else { return }
+
         withAnimation(.easeInOut(duration: 1.5)) {
             isAnimating = true
             progress = feedbackMessage == "Hold Still." ? 1.0 : 0.0
         }
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             isAnimating = false
         }
@@ -29,14 +34,16 @@ struct CameraView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                Color.black
-                    .ignoresSafeArea()
+
+                Color.clear
+                               .ignoresSafeArea()
 
                 if isLoading {
                     LoadingView()
                         .transition(.opacity)
                 } else {
-                    CustomCameraPreviewView(isCameraPreviewVisible: $isCameraPreviewVisible, onViewDidLoad: onViewDidLoad)
+
+                    CameraPreviewView(isCameraPreviewVisible: $isCameraPreviewVisible, onViewDidLoad: onViewDidLoad)
                         .frame(width: geometry.size.width * CameraView.circleDiameterRatio,
                                height: geometry.size.width * CameraView.circleDiameterRatio)
                         .clipShape(Circle())
@@ -60,11 +67,12 @@ struct CameraView: View {
                         .animation(.easeInOut(duration: 1.5), value: progress)
 
                     VStack {
-                        Text(feedbackMessage)
-                            .foregroundColor(.white)
-                            .font(.system(size: 20, weight: .medium))
-                            .padding(.top, 80)
-                            .multilineTextAlignment(.center)
+                       Text(feedbackMessage)
+                           .foregroundColor(Color(red: 64/255, green: 224/255, blue: 208/255))
+                           .font(.system(size: 20, weight: .medium))
+                           .padding(.top, 80)
+                           .multilineTextAlignment(.center)
+
                         Spacer()
                     }
                 }
@@ -72,6 +80,7 @@ struct CameraView: View {
             .onChange(of: feedbackMessage) { newValue in
                 if newValue == "Hold Still." {
                     updateProgress()
+
                     timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
                         updateProgress()
                     }
@@ -85,7 +94,9 @@ struct CameraView: View {
             }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    withAnimation { isLoading = false }
+                    withAnimation {
+                        isLoading = false
+                    }
                 }
             }
             .onDisappear {
@@ -103,96 +114,25 @@ struct LoadingView: View {
 
     var body: some View {
         VStack {
+
             Image(systemName: "camera.fill")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)
-                .foregroundColor(.white)
+                .foregroundColor(.black)
                 .scaleEffect(scale)
                 .opacity(opacity)
                 .onAppear {
-                    withAnimation(Animation.easeInOut(duration: 1.0)
-                                    .repeatForever(autoreverses: true)) {
+                    withAnimation(Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
                         scale = 1.0
                         opacity = 1.0
                     }
                 }
 
             Text("Loading Camera...")
-                .foregroundColor(.white)
+                .foregroundColor(.black)
                 .font(.headline)
                 .padding(.top, 20)
-        }
-    }
-}
-
-struct CustomCameraPreviewView: UIViewRepresentable {
-    @Binding var isCameraPreviewVisible: Bool
-    var onViewDidLoad: (VisionSource) -> Void
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: UIScreen.main.bounds)
-        context.coordinator.setupCamera(in: view)
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
-    }
-
-    class Coordinator: NSObject {
-        var parent: CustomCameraPreviewView
-        var captureSession: AVCaptureSession?
-        var previewLayer: AVCaptureVideoPreviewLayer?
-
-        init(parent: CustomCameraPreviewView) {
-            self.parent = parent
-            super.init()
-        }
-
-        func setupCamera(in view: UIView) {
-            captureSession = AVCaptureSession()
-            guard let captureSession = captureSession else { return }
-
-            guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
-            do {
-                let input = try AVCaptureDeviceInput(device: videoCaptureDevice)
-                if captureSession.canAddInput(input) {
-                    captureSession.addInput(input)
-                }
-
-                try videoCaptureDevice.lockForConfiguration()
-                if videoCaptureDevice.isExposurePointOfInterestSupported {
-                    videoCaptureDevice.exposurePointOfInterest = CGPoint(x: 0.5, y: 0.5)
-                }
-                if videoCaptureDevice.isExposureModeSupported(.continuousAutoExposure) {
-                    videoCaptureDevice.exposureMode = .continuousAutoExposure
-                }
-                if videoCaptureDevice.minExposureTargetBias <= -0.5 &&
-                    videoCaptureDevice.maxExposureTargetBias >= -0.5 {
-                    videoCaptureDevice.setExposureTargetBias(-0.5) { _ in }
-                }
-                videoCaptureDevice.unlockForConfiguration()
-
-            } catch {
-                print("Error setting up camera input: \(error)")
-                return
-            }
-
-            previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-            previewLayer?.videoGravity = .resizeAspectFill
-            previewLayer?.frame = view.bounds
-            if let previewLayer = previewLayer {
-                view.layer.addSublayer(previewLayer)
-            }
-
-            captureSession.startRunning()
-
-            let dummySource = VisionSource()
-            parent.onViewDidLoad(dummySource)
         }
     }
 }

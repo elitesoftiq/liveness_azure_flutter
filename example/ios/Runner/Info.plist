@@ -14,6 +14,8 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>NSCameraUsageDescription</key>
+	<string>يستخدم هذا التطبيق الكاميرا لتوفير معاينة حية وتحليل الوجوه.</string>
 	<key>CFBundleName</key>
 	<string>example</string>
 	<key>CFBundlePackageType</key>
