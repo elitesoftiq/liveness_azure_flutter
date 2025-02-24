@@ -19,7 +19,7 @@ class AutoFitSurfaceView @JvmOverloads constructor(
     private var progress: Float = 0f
     private val path = Path()
     private val borderPaint = Paint().apply {
-        color = Color.GREEN
+        color = Color.parseColor("#40E0D0")
         style = Paint.Style.STROKE
         strokeWidth = 16f
         alpha = 255
@@ -29,7 +29,7 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         strokeWidth = 8f
         strokeCap = Paint.Cap.ROUND
     }
-    private val gradientColors = intArrayOf(Color.GREEN, Color.WHITE)
+    private val gradientColors = intArrayOf(Color.parseColor("#40E0D0"), Color.WHITE)
     private var gradient: SweepGradient? = null
     private var ovalRect = RectF()
 
@@ -96,17 +96,6 @@ class AutoFitSurfaceView @JvmOverloads constructor(
         val sweepAngle = 360f * progress
         canvas.drawArc(ovalRect, -90f, sweepAngle, false, progressPaint)
 
-        // قم بإزالة أو تعليق الكود التالي:
-        /*
-        canvas.save()
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            canvas.clipOutPath(path)
-        } else {
-            canvas.clipPath(path, Region.Op.DIFFERENCE)
-        }
-        canvas.drawColor(Color.parseColor("#80000000"))
-        canvas.restore()
-        */
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
