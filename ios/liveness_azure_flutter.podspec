@@ -15,8 +15,8 @@ A new Flutter project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'AzureAIVisionCore', '~> 0.17.1-beta.1'
-  s.dependency 'AzureAIVisionFace', '~> 0.17.1-beta.1'
+  s.dependency 'AzureAIVisionCore', '~> 0.17.2-beta.1'
+  s.dependency 'AzureAIVisionFace', '~> 0.17.2-beta.1'
   s.static_framework = true
   s.platform = :ios, '14.0'
 
