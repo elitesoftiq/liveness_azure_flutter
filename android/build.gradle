@@ -91,8 +91,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.azure.android:azure-core-http-okhttp:1.0.0-beta.14'
     implementation "androidx.activity:activity-ktx:1.9.0"
-    implementation "com.azure.ai:azure-ai-vision-common:0.17.1-beta.1"
-    implementation "com.azure.ai:azure-ai-vision-faceanalyzer:0.17.1-beta.1"
+    implementation "com.azure.ai:azure-ai-vision-common:0.17.2-beta.1"
+    implementation "com.azure.ai:azure-ai-vision-faceanalyzer:0.17.2-beta.1"
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
