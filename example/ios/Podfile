@@ -35,8 +35,12 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
+  pod 'AzureAIVisionCore', '0.17.1-beta.1'
+  pod 'AzureAIVisionFace', '0.17.1-beta.1'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
+
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
