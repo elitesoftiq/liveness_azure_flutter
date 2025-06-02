@@ -1,18 +1,18 @@
 PODS:
-  - AzureAIVisionCore (0.17.2-beta.1)
-  - AzureAIVisionFace (0.17.2-beta.1):
-    - AzureAIVisionCore (= 0.17.2-beta.1)
+  - AzureAIVisionCore (0.17.1-beta.1)
+  - AzureAIVisionFace (0.17.1-beta.1):
+    - AzureAIVisionCore (= 0.17.1-beta.1)
   - Flutter (1.0.0)
   - liveness_azure_flutter (1.0.0):
-    - AzureAIVisionCore (~> 0.17.2-beta.1)
-    - AzureAIVisionFace (~> 0.17.2-beta.1)
+    - AzureAIVisionCore (~> 0.17.1-beta.1)
+    - AzureAIVisionFace (~> 0.17.1-beta.1)
     - Flutter
   - permission_handler_apple (9.1.1):
     - Flutter
 
 DEPENDENCIES:
-  - AzureAIVisionCore (= 0.17.2-beta.1)
-  - AzureAIVisionFace (= 0.17.2-beta.1)
+  - AzureAIVisionCore (= 0.17.1-beta.1)
+  - AzureAIVisionFace (= 0.17.1-beta.1)
   - Flutter (from `Flutter`)
   - liveness_azure_flutter (from `.symlinks/plugins/liveness_azure_flutter/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
